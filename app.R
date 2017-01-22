@@ -43,11 +43,11 @@ server <- function(input, output) {
       # generate bins based on input$bins from ui.R
     
       num <- seq(min(rd), max(rd), length.out = input$num + 1)
-      plot( rd1[,1] , rd1[,2] )
+      #plot( rd1[,1] , rd1[,2] )
       
       
       # draw the histogram with the specified number of bins
-      #hist(rd, breaks = num, col = 'black', border = 'white')
+      hist(rd, breaks = num, col = 'black', border = 'white')
 
    })
 }
