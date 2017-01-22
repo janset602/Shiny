@@ -28,9 +28,22 @@ ui <- fluidPage(
       
       # Show a plot of the generated distribution
       mainPanel(
-         plotOutput("distPlot")
+        tabsetPanel(
+         # tabPanel("Summary", dataTableOutput("dis")),
+          tabPanel("Plot", plotOutput("Plot2"), plotOutput(("distPlot")))
+        )
       )
    )
+)
+
+ui <- fluidPage(
+  sliderInput("num", "Random Numbers", 1, 100, 30),
+         checkboxGroupInput("checkGroup", 
+                            label = h3("Checkbox group"), 
+                            choices = list("Choice 1" = 1, 
+                                           "Choice 2" = 2, "Choice 3" = 3),
+                            selected = 1),
+  plotOutput("distPlot"), plotOutput(("Plot2"))
 )
 
 # Define server logic required to draw a histogram
@@ -43,15 +56,15 @@ server <- function(input, output) {
       # generate bins based on input$bins from ui.R
     
       num <- seq(min(rd), max(rd), length.out = input$num + 1)
-      plot( rd1[,1] , rd1[,2] )
       
       
       # draw the histogram with the specified number of bins
-      #hist(rd, breaks = num, col = 'black', border = 'white')
-
+        hist(rd, breaks = num, col = 'black', border = 'white')
+       output$Plot2 <- renderPlot({
+        plot( rd1[,1] , rd1[,2])
+      })
    })
 }
-
 # Run the application 
 shinyApp(ui = ui, server = server)
 
