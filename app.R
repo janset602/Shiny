@@ -9,7 +9,6 @@
 
 library(shiny)
 library(NCStats)
-setwd("E:/Biometry")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
