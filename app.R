@@ -8,53 +8,54 @@
 #
 
 library(shiny)
-library(NCStats)
+library( NCStats )
+library( varhandle )
+library( ggplot2 )
+library( dplyr )
+setwd( "E:/")
+
+mo<- c("Jul" , "Aug" , "Sept" , "Oct" , "Nov" , "Dec" , "Jan" , "Feb" ,
+        "Mar" , "Arp" , "May" , "Jun" )
+
+getc <- function( m , lower , upper ) {
+  f <- m[(lower-1)%%12 + 1]
+  for ( i in lower:( upper - 1)) {
+   f <- c( f , m[( i %% 12 ) + 1 ])
+  }
+  return( f )
+}
+
+df <- read.csv( "ETest.csv" )
+
+totaltest <- filterD( df , df$Electric.Gas == "G" &
+!is.na( kwh.ccf ))
+
+totaltest$Month <- totaltest$Month + (( as.numeric( totaltest$Year ) - 1) * 12 )
+
+f <- group_by(totaltest ,  Month ) %>% summarise( sum = sum( kwh.ccf ))
 
 # Define UI for application that draws a histogram
+
 ui <- fluidPage(
-   
-   # Application title
-   titlePanel("Rand"),
-   
-   # Sidebar with a slider input for number of bins 
-   sidebarLayout(
-      sidebarPanel(
-         sliderInput("num",
-                     "Random Numbers:",
-                     min = 1,
-                     max = 100,
-                     value = 30)
-      ),
-      
-      # Show a plot of the generated distribution
-      mainPanel(
-        tabsetPanel(
-         # tabPanel("Summary", dataTableOutput("dis")),
-          tabPanel("Plot", plotOutput("Plot2"), plotOutput(("distPlot")))
-        )
-      )
-   )
+  sliderInput("Inp", "Gas Slider", 1, max = 
+  max( totaltest$Month ), value = c( 1 , max( totaltest$Month ))),#defines input$num
+  checkboxGroupInput("build" , label = "Building" , 
+  choice = c("Science Center" , "ELLC") , inline = FALSE ) , 
+  plotOutput( "Gas") 
 )
 
 # Define server logic required to draw a histogram
-rd1 <-matrix( floor(runif(200,0,100)), 100 , 2) #outside server fcn so that input does 
-# not re rand info
-rd<-faithful[,2]
-server <- function(input, output) {
-   
-   output$distPlot <- renderPlot({
-      # generate bins based on input$bins from ui.R
-    
-      num <- seq(min(rd), max(rd), length.out = input$num + 1)
-      
-      
-      # draw the histogram with the specified number of bins
-      hist(rd, breaks = num, col = 'black', border = 'white')
 
-   })
-   output$Plot2 <- renderPlot({
-     plot( rd1[,1] , rd1[,2])
-   })
+server <- function(input, output) {
+  
+  output$Gas <- renderPlot({
+    tempd <- filterD( totaltest , totaltest$Month >= input$Inp[1] &
+    totaltest$Month <= input$Inp[2])
+    ggplot( data = tempd , aes( x = Month , y = kwh.ccf , color = Building )) +
+    geom_line() + geom_point() + 
+    scale_x_continuous( breaks = seq( input$Inp[1] , input$Inp[2] , by = 1 ) ,
+    label = getc( mo , input$Inp[1] , input$Inp[2]))
+  })
 }
 # Run the application 
 shinyApp(ui = ui, server = server)
